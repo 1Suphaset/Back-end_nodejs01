@@ -2,6 +2,9 @@
 const db = require('../models')
 const Employee = db.employee
 const Setting =db.setting
+const Company =db.company
+const Project =db.project
+const Employee_project = db.employee_project
 
 
 exports.findAll = (req,res) => {
@@ -10,8 +13,14 @@ exports.findAll = (req,res) => {
             attributes: ["id","name","position"],
             include: [{
                 model: Setting,
-                attributes: ["theme"]
-            }]
+                attributes: ["theme"],
+            },{
+                model: Company,
+                attributes: ["name"],
+            },{
+                model: Project,
+                attributes: ["name"],
+            }],
         })
         .then(employee => {
             res.status(200).json(employee)
@@ -37,11 +46,13 @@ exports.create = (req,res) => {
 
         const employeeObj = { //รับค่าจากfont end
             name: req.body.name,
-            position: req.body.position
+            position: req.body.position,
+            companyId: req.body.companyId,
+            projectId: req.body.projectId
         }
         Employee.create(employeeObj)
         .then(data => {
-            res.send(employeeObj)
+            // res.send(employeeObj)
             console.log(data)
             // insert to Setting Table
             Setting.create({
@@ -57,11 +68,26 @@ exports.create = (req,res) => {
     }
 
 }
+exports.addEmployeeToProject = (req,res) => {
+    const junctionAttributes = {
+        employeeId: req.body.employeeId,
+        projectId: req.body.projectId
+    }
+    Employee_project.create(junctionAttributes)
+    .then(res.status(200).json({message: "Employee Project Created!"}))
+    .catch(error => res.status(400).json({message: error.message}))
+}
+
 exports.findOne = (req,res) => {
 // res.send("findOne")
     try{
         const id = req.params.id
-        Employee.findByPk(id)
+        Employee.findByPk(id,{
+            include: [{
+                model: Company,
+                attributes: ["name"],
+            }]
+        })
         .then(data => {
             res.status(200).json(data)
         }).catch(error => {

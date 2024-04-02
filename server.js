@@ -1,6 +1,8 @@
 // 001 สร้างตัวแปร ในการเก็บค่าที่ดึงexpressเข้ามา
+
 const express = require('express');
 const app = express()
+const cors = require('cors')
 // port section
 require('dotenv').config()
 const PORT = process.env.PORT || 5000;
@@ -9,6 +11,8 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json())
 // ยอมรับ key value 
 app.use(express.urlencoded({extended: true}))
+// 
+app.use(cors())
 
 const db = require('./app/models')
 db.sequelize.sync({force:false}).then(() => { //force คือการ
@@ -23,6 +27,8 @@ app.get('/', (req,res) => {
 
 // route section
 require('./app/routes/employee.route')(app)
+require('./app/routes/company.route')(app)
+require('./app/routes/project.route')(app)
 
 //ทำให้file server.js สามารถทดสอบได้
 app.listen(PORT, () => {
